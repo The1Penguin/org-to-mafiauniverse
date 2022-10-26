@@ -22,8 +22,8 @@ useArgs ('v':_) = version >> exit
 useArgs (_:xs)   = useArgs xs
 
 usage :: IO ()
-usage   = putStrLn "Usage: \"PENDINGNAME\" [-hv] [file]"
+usage   = putStrLn "Usage: otm [-hv] [file]"
 version :: IO ()
-version = putStrLn "\"PENDINGNAME\" 0.1"
+version = putStrLn "otm 0.1"
 exit :: IO a
 exit    = exitWith ExitSuccess

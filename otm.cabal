@@ -11,7 +11,7 @@ cabal-version:      3.4
 --   http://haskell.org/cabal/users-guide/
 --
 -- The name of the package.
-name:               org-to-mafiauniverse
+name:               otm
 
 -- The package version.
 -- See the Haskell package versioning policy (PVP) for standards
@@ -53,7 +53,7 @@ extra-doc-files:    CHANGELOG.md
 common warnings
     ghc-options: -Wall
 
-executable org-to-mafiauniverse
+executable otm
     -- Import common warning flags.
     import:           warnings
 
