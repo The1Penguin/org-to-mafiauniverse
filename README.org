@@ -3,3 +3,17 @@
 Org to mafiauniverse is a parser which transforms org text into forum posts for the forum mafiauniverse.
 
 The name is pronounced like autumn.
+
+* Spec
+
+| org | forum           |
+|-----+-----------------|
+| *   | [TITLE][/TITLE] |
+| **  | [SIZE=4][/SIZE] |
+| *** | [SIZE=2][/SIZE] |
+|     |                 |
+|     |                 |
+|     |                 |
+|     |                 |
+|     |                 |
+|     |                 |
