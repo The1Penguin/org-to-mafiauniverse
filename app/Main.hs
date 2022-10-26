@@ -8,37 +8,27 @@ import System.Environment
 import System.Exit
 import Text.Megaparsec hiding (satisfy)
 import Text.Megaparsec.Char
-import Text.ParserCombinators.ReadP hiding (string)
 
 type Parser = Parsec Void String
 
+parseHelper :: Parser String -> String -> String
+parseHelper parser x = case parse parser "" x of
+  Left bundle -> error $ errorBundlePretty bundle
+  Right text -> text
+
 parseFile :: String -> String
-parseFile =
-  unlines
-    . map
-      ( \x -> case parse fileParser "" x of
-          Left bundle -> error ("Error parsing text" ++ errorBundlePretty bundle)
-          Right text -> text
-      )
-    . lines
+parseFile = unlines . map (parseHelper fileParser) . lines
 
 fileParser :: Parser String
 fileParser = undefined
-
-main :: IO ()
-main = putStr =<< parseCli =<< getArgs
 
 parseCli :: [String] -> IO String
 parseCli [] = return usage
 parseCli [x] =
   if head x /= '-'
     then parseFile <$> readFile x
-    else case parse argParse "" x of
-      Left bundle -> fail $ "Failed parsing args" ++ errorBundlePretty bundle
-      Right text -> return $ useArgs text
-parseCli [x, _] = case parse argParse "" x of
-  Left bundle -> fail $ "Failed parsing args" ++ errorBundlePretty bundle
-  Right text -> return $ useArgs text
+    else return $ useArgs $ parseHelper argParse x
+parseCli [x, _] = return $ useArgs $ parseHelper argParse x
 parseCli _ = fail "Too many arugemnts"
 
 argParse :: Parser String
@@ -56,3 +46,6 @@ usage = "Usage: otm [-hv] [file]"
 
 version :: String
 version = "otm 0.1"
+
+main :: IO ()
+main = putStr =<< parseCli =<< getArgs
