@@ -4,12 +4,42 @@ import           Control.Applicative  hiding (some)
 import           Control.Monad
 import           Data.Functor
 import           Data.Void
+import           GHC.Stack.CCS        (whereFrom)
+import           GHC.StaticPtr        (StaticPtrInfo)
 import           System.Environment
 import           System.Exit
 import           Text.Megaparsec      hiding (satisfy)
 import           Text.Megaparsec.Char
 
 type Parser = Parsec Void String
+
+newtype URL = URL String
+
+data Info =
+  Bread String        |
+  List [Info]         |
+  Header String       |
+  Subheader String    |
+  Subsubheader String |
+  Image URL           |
+  Video URL           |
+  Link URL Info       |
+  Spoiler Info
+
+instance Show Info where
+  show :: Info -> String
+  show info = case info of
+             Bread text         -> text
+             List texts         -> "[LIST]" ++ concatMap show texts ++ "[/LIST]"
+             Header text        -> "[TITLE]" ++ text ++ "[/TITLE]"
+             Subheader text     -> "[SIZE=4]" ++ text ++ "[/SIZE]"
+             Subsubheader text  -> "[SIZE=2]" ++ text ++ "[/SIZE]"
+             Image (URL url)    -> "[IMG]" ++ url ++ "[/IMG]"
+             Video (URL url)    -> "[VIDEO]" ++ url ++ "[/VIDEO]"
+             Link (URL url) inf -> "[URL=\"" ++ url ++ "\"]" ++ show inf  ++ "[/IMG]"
+             Spoiler inf        -> "[SPOILER]" ++ show inf ++ "[/SPOILER]"
+
+newtype Post = Post [Info]
 
 parseHelper :: Parser String -> String -> String
 parseHelper parser x = case parse parser "" x of

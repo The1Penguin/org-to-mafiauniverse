@@ -6,15 +6,11 @@ The name is pronounced like autumn.
 
 * Spec
 
-| org | forum           | Notes                     |
-|-----+-----------------+---------------------------|
-| *   | [TITLE][/TITLE] |                           |
-| **  | [SIZE=4][/SIZE] |                           |
-| *** | [SIZE=2][/SIZE] |                           |
-| -   | [*]             | Needs a [LIST] around all |
-|     |                 |                           |
-|     |                 |                           |
-|     |                 |                           |
-|     |                 |                           |
-|     |                 |                           |
-|     |                 |                           |
+| org           | forum                                                | Notes                              |
+|---------------+------------------------------------------------------+------------------------------------|
+| *             | [TITLE][/TITLE]                                      |                                    |
+| **            | [SIZE=4][/SIZE]                                      |                                    |
+| ***           | [SIZE=2][/SIZE]                                      |                                    |
+| -             | [*]                                                  | Needs a [LIST] around all          |
+| [[]]          | [IMG][/IMG] or [VIDEO][/VIDEO] or [URL="link"][/URL] | Figure out what type of link it is |
+| #+BEGIN #+END | [SPOILER][/SPOILER]                                  |                                    |
