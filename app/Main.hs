@@ -4,11 +4,9 @@ import           Control.Applicative  hiding (some)
 import           Control.Monad
 import           Data.Functor
 import           Data.Void
-import           GHC.Stack.CCS        (whereFrom)
-import           GHC.StaticPtr        (StaticPtrInfo)
 import           System.Environment
 import           System.Exit
-import           Text.Megaparsec      hiding (satisfy)
+import           Text.Megaparsec
 import           Text.Megaparsec.Char
 
 type Parser = Parsec Void String
@@ -30,7 +28,7 @@ instance Show Info where
   show :: Info -> String
   show info = case info of
              Bread text         -> text
-             List texts         -> "[LIST]" ++ concatMap show texts ++ "[/LIST]"
+             List texts         -> "[LIST]" ++ concatMap ((++) "[*] " . show) texts ++ "[/LIST]"
              Header text        -> "[TITLE]" ++ text ++ "[/TITLE]"
              Subheader text     -> "[SIZE=4]" ++ text ++ "[/SIZE]"
              Subsubheader text  -> "[SIZE=2]" ++ text ++ "[/SIZE]"
@@ -41,21 +39,31 @@ instance Show Info where
 
 newtype Post = Post [Info]
 
-parseHelper :: Parser String -> String -> String
+instance Show Post where
+  show :: Post -> String
+  show (Post a) = concatMap show a
+
+parseHelper :: Parser a -> String -> a
 parseHelper parser x = case parse parser "" x of
   Left bundle -> error $ errorBundlePretty bundle
   Right text  -> text
 
-parseFile :: String -> String
-parseFile = unlines . map (parseHelper fileParser) . lines
+parseFile :: String -> Post
+parseFile = Post . map (parseHelper fileParser) . lines
 
-fileParser :: Parser String
-fileParser = try $
-    string "* " <|>
-    string "** "
+fileParser :: Parser Info
+fileParser = undefined
+--   try $
+--     string' "* "       <|>
+--     string' "** "      <|>
+--     string' "*** "     <|>
+--     string' "- "       <|>
+--     string' "[["       <|>
+--     string' "#+BEGIN"  <|>
+--     string' "#+END"
 
-parseCli :: [String] -> IO String
-parseCli []     = return usage
+parseCli :: [String] -> IO Post
+parseCli []     = return $ Post [usage]
 parseCli [x]    =
   if head x /= '-'
     then parseFile <$> readFile x
@@ -66,17 +74,17 @@ parseCli _      = fail "Too many arugemnts"
 argParse :: Parser String
 argParse = string "-" >> some alphaNumChar
 
-useArgs :: String -> String
-useArgs []        = ""
-useArgs ('h' : _) = usage
-useArgs ('v' : _) = version
+useArgs :: String -> Post
+useArgs []        = Post [Bread ""]
+useArgs ('h' : _) = Post [usage]
+useArgs ('v' : _) = Post [version]
 useArgs (_ : xs)  = useArgs xs
 
-usage :: String
-usage = "Usage: otm [-hv] [file]"
+usage :: Info
+usage = Bread "Usage: otm [-hv] [file]"
 
-version :: String
-version = "otm 0.1"
+version :: Info
+version = Bread "otm 0.1"
 
 main :: IO ()
-main = putStr =<< parseCli =<< getArgs
+main = putStr . show =<< parseCli =<< getArgs
