@@ -56,7 +56,7 @@ parseHelper parser x = case parse parser "" x of
   Right text  -> text
 
 parseFile :: String -> Post
-parseFile = Post . reduce . map (parseHelper fileParser) . lines
+parseFile = Post . reduce . map (parseHelper fileParser) . dropWhile (/= "")  . lines
 
 fileParser :: Parser Info
 fileParser =
@@ -70,8 +70,8 @@ fileParser =
      Image . URL                <$> between (string' "[[") (string' "]]") (takeWhileP Nothing (/= ']')),
      Video . URL                <$> between (string' "[[") (string' "]]") (takeWhileP Nothing (/= ']')),
      -- parseLink,
-     Spoiler . (: []) . Bread   <$> (string' "+BEGIN" >> return ""),
-     Spoiler . (: []) . Bread   <$> (string' "+END"   >> return ""),
+     Spoiler . (: []) . Bread   <$> (string' "#+BEGIN" >> return ""),
+     Spoiler . (: []) . Bread   <$> (string' "#+END"   >> return ""),
      Bread                      <$> takeRest
      ]
 

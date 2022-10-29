@@ -14,3 +14,7 @@ The name is pronounced like autumn.
 | -             | [*]                                                  | Needs a [LIST] around all          |
 | [[]]          | [IMG][/IMG] or [VIDEO][/VIDEO] or [URL="link"][/URL] | Figure out what type of link it is |
 | #+BEGIN #+END | [SPOILER][/SPOILER]                                  |                                    |
+
+* Todo [0/2]
+- [ ] Image or Video parser
+- [ ] Properly support normal links
