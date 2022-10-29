@@ -22,7 +22,7 @@ data Info =
   Image URL           |
   Video URL           |
   Link URL Info       |
-  Spoiler Info
+  Spoiler [Info]
 
 instance Show Info where
   show :: Info -> String
@@ -35,7 +35,7 @@ instance Show Info where
              Image (URL url)    -> "[IMG]" ++ url ++ "[/IMG]"
              Video (URL url)    -> "[VIDEO]" ++ url ++ "[/VIDEO]"
              Link (URL url) inf -> "[URL=\"" ++ url ++ "\"]" ++ show inf  ++ "[/IMG]"
-             Spoiler inf        -> "[SPOILER]" ++ show inf ++ "[/SPOILER]"
+             Spoiler inf        -> "[SPOILER]" ++ concatMap show inf ++ "[/SPOILER]"
 
 newtype Post = Post [Info]
 
@@ -43,24 +43,40 @@ instance Show Post where
   show :: Post -> String
   show (Post a) = concatMap show a
 
+reduce :: [Info] -> [Info]
+reduce []                               = []
+reduce ((List x) : (List y) : xs)       = reduce $ List (x++y) : xs
+reduce ((Spoiler x) : (Spoiler y) : xs) = Spoiler (x++y) : reduce xs
+reduce ((Spoiler x) : y : xs)           = reduce $ Spoiler (reduce $ x ++ [y]) : xs
+reduce (x:xs)                           = x: reduce xs
+
 parseHelper :: Parser a -> String -> a
 parseHelper parser x = case parse parser "" x of
   Left bundle -> error $ errorBundlePretty bundle
   Right text  -> text
 
 parseFile :: String -> Post
-parseFile = Post . map (parseHelper fileParser) . lines
+parseFile = Post . reduce . map (parseHelper fileParser) . lines
 
 fileParser :: Parser Info
-fileParser = undefined
---   try $
---     string' "* "       <|>
---     string' "** "      <|>
---     string' "*** "     <|>
---     string' "- "       <|>
---     string' "[["       <|>
---     string' "#+BEGIN"  <|>
---     string' "#+END"
+fileParser =
+   try $
+   choice [
+     Header                     <$> (string' "* "   >> takeRest),
+     Subheader                  <$> (string' "** "  >> takeRest),
+     Subsubheader               <$> (string' "*** " >> takeRest),
+     List . (: []) . Bread      <$> (string' "- "   >> takeRest),
+     -- Image and video needs to know if it is a image or video
+     Image . URL                <$> between (string' "[[") (string' "]]") (takeWhileP Nothing (/= ']')),
+     Video . URL                <$> between (string' "[[") (string' "]]") (takeWhileP Nothing (/= ']')),
+     -- parseLink,
+     Spoiler . (: []) . Bread   <$> (string' "+BEGIN" >> return ""),
+     Spoiler . (: []) . Bread   <$> (string' "+END"   >> return ""),
+     Bread                      <$> takeRest
+     ]
+
+parseLink :: Parser Info
+parseLink = undefined
 
 parseCli :: [String] -> IO Post
 parseCli []     = return $ Post [usage]
