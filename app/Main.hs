@@ -27,15 +27,15 @@ data Info =
 instance Show Info where
   show :: Info -> String
   show info = case info of
-             Bread text         -> text
-             List texts         -> "[LIST]" ++ concatMap ((++) "[*] " . show) texts ++ "[/LIST]"
-             Header text        -> "[TITLE]" ++ text ++ "[/TITLE]"
-             Subheader text     -> "[SIZE=4]" ++ text ++ "[/SIZE]"
-             Subsubheader text  -> "[SIZE=2]" ++ text ++ "[/SIZE]"
-             Image (URL url)    -> "[IMG]" ++ url ++ "[/IMG]"
-             Video (URL url)    -> "[VIDEO]" ++ url ++ "[/VIDEO]"
-             Link (URL url) inf -> "[URL=\"" ++ url ++ "\"]" ++ show inf  ++ "[/IMG]"
-             Spoiler inf        -> "[SPOILER]" ++ concatMap show inf ++ "[/SPOILER]"
+             Bread text         -> text ++ "\n"
+             List texts         -> "[LIST]" ++ concatMap ((++) "[*] " . show) texts ++ "[/LIST]\n"
+             Header text        -> "[TITLE]" ++ text ++ "[/TITLE]\n"
+             Subheader text     -> "[SIZE=4]" ++ text ++ "[/SIZE]\n"
+             Subsubheader text  -> "[SIZE=2]" ++ text ++ "[/SIZE]\n"
+             Image (URL url)    -> "[IMG]" ++ url ++ "[/IMG]\n"
+             Video (URL url)    -> "[VIDEO]" ++ url ++ "[/VIDEO]\n"
+             Link (URL url) inf -> "[URL=\"" ++ url ++ "\"]" ++ show inf  ++ "[/URL]\n"
+             Spoiler inf        -> "[SPOILER]" ++ concatMap show inf ++ "[/SPOILER]\n"
 
 newtype Post = Post [Info]
 
