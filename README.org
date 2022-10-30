@@ -18,3 +18,6 @@ The name is pronounced like autumn.
 * Todo [0/2]
 - [ ] Image or Video parser
 - [ ] Properly support normal links
+
+* Issues
+- Link parser goes to the first one in line and never exits that and therefore errors when not receiving a proper file type in the end

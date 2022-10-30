@@ -11,7 +11,8 @@ import           Text.Megaparsec.Char
 
 type Parser = Parsec Void String
 
-newtype URL = URL String
+data URL = Img String | Vid String | Website String
+  deriving (Show)
 
 data Info =
   Bread String        |
@@ -32,10 +33,11 @@ instance Show Info where
              Header text        -> "[TITLE]" ++ text ++ "[/TITLE]\n"
              Subheader text     -> "[SIZE=4]" ++ text ++ "[/SIZE]\n"
              Subsubheader text  -> "[SIZE=2]" ++ text ++ "[/SIZE]\n"
-             Image (URL url)    -> "[IMG]" ++ url ++ "[/IMG]\n"
-             Video (URL url)    -> "[VIDEO]" ++ url ++ "[/VIDEO]\n"
-             Link (URL url) inf -> "[URL=\"" ++ url ++ "\"]" ++ show inf  ++ "[/URL]\n"
+             Image (Img url)    -> "[IMG]" ++ url ++ "[/IMG]\n"
+             Video (Vid url)    -> "[VIDEO]" ++ url ++ "[/VIDEO]\n"
+             Link (Website url) inf -> "[URL=\"" ++ url ++ "\"]" ++ show inf  ++ "[/URL]\n"
              Spoiler inf        -> "[SPOILER]" ++ concatMap show inf ++ "[/SPOILER]\n"
+             _                  -> error "Something went wrong with showing the parsed information"
 
 newtype Post = Post [Info]
 
@@ -67,16 +69,29 @@ fileParser =
      Subsubheader               <$> (string' "*** " >> takeRest),
      List . (: []) . Bread      <$> (string' "- "   >> takeRest),
      -- Image and video needs to know if it is a image or video
-     Image . URL                <$> between (string' "[[") (string' "]]") (takeWhileP Nothing (/= ']')),
-     Video . URL                <$> between (string' "[[") (string' "]]") (takeWhileP Nothing (/= ']')),
-     -- parseLink,
+     Image                      <$> between (string' "[[") (string' "]]") parseLink,
+     Video                      <$> between (string' "[[") (string' "]]") parseLink,
+        -- (takeWhileP Nothing (/= ']')),
      Spoiler . (: []) . Bread   <$> (string' "#+BEGIN" >> return ""),
      Spoiler . (: []) . Bread   <$> (string' "#+END"   >> return ""),
      Bread                      <$> takeRest
      ]
 
-parseLink :: Parser Info
-parseLink = undefined
+parseLink :: Parser URL
+parseLink = try $ choice [
+  do
+    scheme <- string' "https://"
+    auth <- takeWhileP Nothing (/= '/')
+    path <- takeWhileP Nothing (/= '.')
+    typ <- try $ string' ".jpg" <|> string ".jpeg" <|> string' ".png" <|> string ".gif"
+    return $ Img $ scheme ++ auth ++ path ++ typ,
+  do
+    scheme <- string' "https://"
+    auth <- try $ string' "youtu.be" <|> string' "youtube.com"
+    path <- takeRest
+    return $ Vid $ scheme ++ auth ++ path,
+  Website <$> takeRest
+  ]
 
 parseCli :: [String] -> IO Post
 parseCli []     = return $ Post [usage]
